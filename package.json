@@ -1,0 +1,21 @@
+{
+  "name": "event-booking-system",
+  "version": "1.0.0",
+  "description": "A Nodejs RESTful API for event booking",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon server.js"
+  },
+  "author": "Dagim Fikru",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.2",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.0.3",
+    "morgan": "^1.10.0",
+    "nodemon": "^3.0.2"
+  }
+}
