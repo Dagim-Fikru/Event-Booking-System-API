@@ -10,7 +10,7 @@ const Event = require("../models/event");
 
 const checkAuth = require("../middleware/check-auth");
 
-router.post("/" ,checkAuth,(req, res, next) => {
+router.post("/",checkAuth ,(req, res, next) => {
     Event.findById(req.body.event)
         .then((event) => {
             if (!event) {

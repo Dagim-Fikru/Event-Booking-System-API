@@ -30,8 +30,6 @@ app.use((req, res, next) => {
     }
     next();
 });
-
-
 // middleware to handle incoming requests
 app.use('/events', eventRoutes);
 app.use('/bookings', bookingRoutes);
