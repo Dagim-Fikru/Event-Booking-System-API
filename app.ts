@@ -6,9 +6,14 @@ import mongoose from 'mongoose';
 import eventRoutes from './api/routes/events';
 import bookingRoutes from './api/routes/bookings';
 import userRoutes from './api/routes/users';
+import homeRoutes from './api/routes/home';
 import dotenv from 'dotenv';
 
+
+
+
 const app = express();
+
 class CustomError extends Error {
     public status: number;
 
@@ -46,6 +51,7 @@ app.use((req: express.Request, res: express.Response, next: express.NextFunction
 app.use('/events', eventRoutes);
 app.use('/bookings', bookingRoutes);
 app.use('/users', userRoutes);
+app.use('/', homeRoutes);
 
 // error handling
 app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {

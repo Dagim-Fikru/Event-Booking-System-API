@@ -4,7 +4,6 @@ import Event from "../models/event";
 import checkAuth from "../middleware/check-auth";
 
 const router = express.Router();
-
 router.get('/', async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     try {
         const docs = await Event.find().select("-__v").exec();
@@ -31,11 +30,13 @@ router.get('/', async (req: express.Request, res: express.Response, next: expres
         res.status(200).json(response);
     } catch (err) {
         console.log(err);
-        res.status(500).json({ error: err });
+        res
+            .status(500)
+            .json({ error: "An error occurred while fetching events" });
     }
 });
 
-router.post('/', checkAuth,async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+router.post('/', checkAuth, async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const event = new Event({
         _id: new mongoose.Types.ObjectId(),
         title: req.body.title,
@@ -64,7 +65,7 @@ router.post('/', checkAuth,async (req: express.Request, res: express.Response, n
         });
     } catch (err) {
         console.log(err);
-        res.status(500).json({ error: err });
+        res.status(500).json({ error: "Required fields can't be empty" });
     }
 });
 
@@ -92,6 +93,10 @@ router.get('/:eventId', async (req: express.Request, res: express.Response, next
 
 
 router.put('/:eventId', checkAuth, async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const event = await Event.findById(req.params.eventId).select("-__v").exec();
+    if (!event) {
+        return res.status(404).json({ message: "Event not found" });
+    }
     const id = req.params.eventId;
     const updateOps: any = req.body;
     try {
@@ -116,11 +121,18 @@ router.put('/:eventId', checkAuth, async (req: express.Request, res: express.Res
 
 router.delete('/:eventId', checkAuth, async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     try {
+        const event = await Event.findById(req.params.eventId)
+            .select("-__v")
+            .exec();
+        if (!event) {
+            return res.status(404).json({ message: "Event not found" });
+        }
         const result = await Event.deleteOne({ _id: req.params.eventId }).exec();
         res.status(200).json({
             message: "Event deleted",
             request: {
                 type: "POST",
+                message: "Create a new Event",
                 url: "http://localhost:3000/events/",
                 body: {
                     title: "String",
@@ -133,7 +145,7 @@ router.delete('/:eventId', checkAuth, async (req: express.Request, res: express.
         });
     } catch (err) {
         console.log(err);
-        res.status(500).json({ error: err });
+        res.status(500).json({ error: "Invalid Id" });
     }
 });
 

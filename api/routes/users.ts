@@ -41,7 +41,7 @@ router.post("/signup", async (req: express.Request, res: express.Response, next:
         }
     } catch (err) {
         console.log(err);
-        res.status(500).json({ error: err });
+        res.status(500).json({ error: "Required fields are missing"});
     }
 });
 
@@ -129,26 +129,31 @@ router.get("/:userId", async (req: express.Request, res: express.Response, next:
         }
     } catch (err) {
         console.log(err);
-        res.status(500).json({ error: err });
+        res.status(500).json({ error: "Invalid Id" });
     }
 });
 
-router.patch("/:userId", async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+router.put("/:userId", async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const id = req.params.userId;
+    const updateOps: any = req.body;
     try {
-        const result = await User.updateOne({ _id: req.params.userId }, { $set: req.body }).exec();
+        const result = await User.updateOne(
+            { _id: id },
+            { $set: updateOps }
+        ).exec();
+        console.log(result);
         res.status(200).json({
             message: "User updated",
             request: {
                 type: "GET",
-                url: "http://localhost:3000/users/" + req.params.userId,
+                url: "http://localhost:3000/users/" + id,
             },
         });
     } catch (err) {
         console.log(err);
-        res.status(500).json({ error: err });
+        res.status(500).json({ error: "Invalid Id" });
     }
-}
-);
+});
 
 router.delete("/:userId", async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     try {
@@ -167,7 +172,7 @@ router.delete("/:userId", async (req: express.Request, res: express.Response, ne
         });
     } catch (err) {
         console.log(err);
-        res.status(500).json({ error: err });
+        res.status(500).json({ error: "Invalid Id" });
     }
 });
 

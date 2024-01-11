@@ -13,7 +13,6 @@ const checkAuth = (req: Request, res: Response, next: NextFunction) => {
             throw new Error("JWT Key not found in environment variables");
         }
         const decoded = jwt.verify(token, process.env.JWT_KEY);
-        console.log(token);
         req.body.userData = decoded;
         next();
     } catch (error) {

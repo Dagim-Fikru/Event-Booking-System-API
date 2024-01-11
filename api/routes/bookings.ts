@@ -45,8 +45,7 @@ router.post(
                 },
             });
         } catch (err) {
-            console.log(err);
-            res.status(500).json({ error: err });
+            res.status(500).json({ error: "Required fields are empty or invalid" });
         }
     }
 );
@@ -82,7 +81,7 @@ router.get(
                 }),
             });
         } catch (err) {
-            res.status(500).json({ error: err });
+            res.status(500).json({ error: "Error occured while fetching bookings" });
         }
     }
 );
@@ -113,46 +112,40 @@ router.get(
                 },
             });
         } catch (err) {
-            res.status(500).json({ error: err });
+            res.status(500).json({ error: "Invalid Id" });
         }
     }
 );
 
-router.patch(
-    "/:bookingId",
-    checkAuth,
-    async (
-        req: express.Request,
-        res: express.Response,
-        next: express.NextFunction
-    ) => {
-        try {
-            const booking = await Booking.findById(req.params.bookingId).exec();
-            if (!booking) {
-                return res.status(404).json({
-                    message: "Booking not found",
-                });
-            }
-            await Booking.updateOne(
-                { _id: req.params.bookingId },
-                {
-                    $set: {
-                        status: req.body.status,
-                    },
-                }
-            ).exec();
-            res.status(200).json({
-                message: "Booking updated",
-                request: {
-                    type: "GET",
-                    url: "http://localhost:3000/bookings/" + req.params.bookingId,
-                },
-            });
-        } catch (err) {
-            res.status(500).json({ error: err });
-        }
+router.put("/:bookingId", checkAuth, async (req, res, next) => {
+    let booking;
+    try {
+        booking = await Booking.findById(req.params.bookingId).exec();
+    } catch (err) {
+        return res.status(400).json({ error: "Invalid Id" });
     }
-);
+    if (!booking) {
+        return res.status(404).json({ message: "Booking not found" });
+    }
+    const id = req.params.bookingId;
+    const updateOps: any = req.body;
+    try {
+        const result = await Booking.updateOne(
+            { _id: id },
+            { $set: updateOps }
+        ).exec();
+        console.log(result);
+        res.status(200).json({
+            message: "Booking updated",
+            request: {
+                type: "GET",
+                url: "http://localhost:3000/bookings/" + id,
+            },
+        });
+    } catch (err) {
+        res.status(500).json({ error: "Invalid Id" });
+    }
+});
 
 router.delete(
     "/:bookingId",
@@ -183,7 +176,7 @@ router.delete(
                 },
             });
         } catch (err) {
-            res.status(500).json({ error: err });
+            res.status(500).json({ error: "Invalid Id" });
         }
     }
 );
