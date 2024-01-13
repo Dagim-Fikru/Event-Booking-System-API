@@ -3,7 +3,9 @@ import mongoose from "mongoose";
 import User from "../models/user";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-
+import { RegisterValidation } from "../utils/validation";
+import { LoginValidation } from "../utils/validation";
+import { UpdateValidation } from "../utils/validation";
 const UserController = {
     user_signup: async (
         req: express.Request,
@@ -11,6 +13,10 @@ const UserController = {
         next: express.NextFunction
     ) => {
         try {
+            const { error } = RegisterValidation(req.body);
+            if (error) {
+                return res.status(400).json({ error: error.details[0].message });
+            }
             const user = await User.find({ email: req.body.email }).exec();
             if (user.length >= 1) {
                 return res.status(409).json({
@@ -53,10 +59,14 @@ const UserController = {
         next: express.NextFunction
     ) => {
         try {
+            const { error } = LoginValidation(req.body);
+            if (error) {
+                return res.status(400).json({ error: "Email or password is incorrect" });
+            }
             const user = await User.find({ email: req.body.email }).exec();
             if (user.length < 1) {
                 return res.status(401).json({
-                    message: "Auth failed",
+                    message: "User not found",
                 });
             }
             const result = await bcrypt.compare(req.body.password, user[0].password);
@@ -80,7 +90,6 @@ const UserController = {
                 message: "Auth failed",
             });
         } catch (err) {
-            console.log(err);
             res.status(500).json({ error: err });
         }
     },
@@ -150,6 +159,10 @@ const UserController = {
     ) => {
 
         try {
+            const { error } = UpdateValidation(req.body);
+            if (error) {
+                return res.status(400).json({ error: error.details[0].message });
+            }
             const user = await User.findById(req.params.userId).exec();
             if (!user) {
                 return res.status(404).json({
@@ -171,7 +184,6 @@ const UserController = {
                 },
             });
         } catch (err) {
-            console.log(err);
             res.status(500).json({ error: "Invalid Id" });
         }
     },

@@ -5,7 +5,7 @@ interface ITimestamps {
     updatedAt: Date;
 }
 
-interface IEvent extends Document, ITimestamps {
+export interface IEvent extends Document, ITimestamps {
     _id: string;
     title: string;
     description: string;

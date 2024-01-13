@@ -5,7 +5,7 @@ interface ITimestamps {
     updatedAt: Date;
 }
 
-interface IUser extends Document, ITimestamps {
+export interface IUser extends Document, ITimestamps {
     _id: string;
     name: string;
     email: string;
@@ -18,15 +18,9 @@ const userSchema: Schema = new Schema({
     email: {
         type: String,
         required: true,
-        validate: {
-            validator: function (v: string): boolean {
-                return /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/.test(v);
-            },
-            message: (props: any): string => `${props.value} is not a valid email address!`,
-        },
         unique: true,
     },
-    password: { type: String, required: true, minLength: 6 },
+    password: { type: String, required: true },
 }, { timestamps: true });
 
 export default mongoose.model < IUser > ('User', userSchema);

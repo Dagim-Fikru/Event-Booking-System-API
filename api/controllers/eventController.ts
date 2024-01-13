@@ -1,6 +1,7 @@
 import express from "express";
 import mongoose from "mongoose";
 import Event from "../models/event";
+import { EventValidation } from "../utils/validation";
 
 const EventController = {
     get_all_events: async (
@@ -42,6 +43,10 @@ const EventController = {
         res: express.Response,
         next: express.NextFunction
     ) => {
+        const { error } = EventValidation(req.body);
+        if (error) {
+            return res.status(400).json({ error: error.details[0].message });
+        }
         const event = new Event({
             _id: new mongoose.Types.ObjectId(),
             title: req.body.title,

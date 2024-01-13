@@ -2,7 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import Event from "../models/event";
 import checkAuth from "../middleware/check-auth";
-import EventController from "../controllers/events";
+import EventController from "../controllers/eventController";
 
 const router = express.Router();
 router.get('/', EventController.get_all_events);

@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import User from "../models/user";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import UserController from "../controllers/users";
+import UserController from "../controllers/userController";
 import checkAuth from "../middleware/check-auth";
 
 const router = express.Router();

@@ -3,9 +3,9 @@ import express from 'express';
 import morgan from 'morgan';
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
-import eventRoutes from './api/routes/events';
-import bookingRoutes from './api/routes/bookings';
-import userRoutes from './api/routes/users';
+import eventRoutes from "./api/routes/eventRoutes";
+import bookingRoutes from "./api/routes/bookingRoutes";
+import userRoutes from './api/routes/userRoutes';
 import homeRoutes from './api/routes/home';
 import dotenv from 'dotenv';
 

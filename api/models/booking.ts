@@ -4,7 +4,7 @@ interface ITimestamps {
     updatedAt: Date;
 }
 
-interface IBooking extends Document, ITimestamps {
+export interface IBooking extends Document, ITimestamps {
     _id: string;
     event: string;
     booking_date: string;

@@ -2,6 +2,7 @@ import express from "express";
 import Booking from "../models/booking";
 import mongoose from "mongoose";
 import Event from "../models/event";
+import { BookingValidation } from "../utils/validation";
 
 const BookingController = {
     post_abooking: async (
@@ -10,6 +11,10 @@ const BookingController = {
         next: express.NextFunction
     ) => {
         try {
+            const { error } = BookingValidation(req.body);
+            if (error) {
+                return res.status(400).json({ error: error.details[0].message });
+            }
             const event = await Event.findById(req.body.event);
             if (!event) {
                 return res.status(404).json({
@@ -23,7 +28,6 @@ const BookingController = {
                 status: req.body.status,
             });
             const result = await booking.save();
-            console.log(result);
             res.status(201).json({
                 message: "Event Booked successfully!",
                 createdBooking: {
@@ -40,7 +44,9 @@ const BookingController = {
                 },
             });
         } catch (err) {
-            res.status(500).json({ error: "Required fields are empty or invalid" });
+            res
+                .status(500)
+                .json({ error: "invalid event id" });
         }
     },
     get_all_bookings: async (
