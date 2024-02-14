@@ -3,6 +3,8 @@ import Booking from "../models/booking";
 import mongoose from "mongoose";
 import Event from "../models/event";
 import { BookingValidation } from "../utils/validation";
+import { sendBadRequest, sendSuccess, sendNotFound, sendForbidden,sendToken } from "../utils/response";
+
 
 const BookingController = {
     post_abooking: async (
@@ -13,13 +15,15 @@ const BookingController = {
         try {
             const { error } = BookingValidation(req.body);
             if (error) {
-                return res.status(400).json({ error: error.details[0].message });
+                return sendBadRequest(res, error.details[0].message);
+                // return res.status(400).json({ error: error.details[0].message });
             }
             const event = await Event.findById(req.body.event);
             if (!event) {
-                return res.status(404).json({
-                    message: "Event not found",
-                });
+                return sendNotFound(res, "Event not found");
+                // return res.status(404).json({
+                //     message: "Event not found",
+                // });
             }
             const booking = new Booking({
                 _id: new mongoose.Types.ObjectId(),
@@ -28,25 +32,27 @@ const BookingController = {
                 status: req.body.status,
             });
             const result = await booking.save();
-            res.status(201).json({
-                message: "Event Booked successfully!",
-                createdBooking: {
-                    _id: result._id,
-                    event: result.event,
-                    booking_date: result.booking_date,
-                    status: result.status,
-                    createdAt: result.createdAt,
-                    updatedAt: result.updatedAt,
-                    request: {
-                        type: "GET",
-                        url: "http://localhost:3000/bookings/" + result._id,
-                    },
-                },
-            });
+            return sendSuccess(res, "Event Booked successfully!",result)
+            // res.status(201).json({
+            //     message: "Event Booked successfully!",
+            //     createdBooking: {
+            //         _id: result._id,
+            //         event: result.event,
+            //         booking_date: result.booking_date,
+            //         status: result.status,
+            //         createdAt: result.createdAt,
+            //         updatedAt: result.updatedAt,
+            //         request: {
+            //             type: "GET",
+            //             url: "http://localhost:3000/bookings/" + result._id,
+            //         },
+            //     },
+            // });
         } catch (err) {
-            res
-                .status(500)
-                .json({ error: "invalid event id" });
+            return sendBadRequest(res, "Invalid Id", err);
+            // res
+            //     .status(500)
+            //     .json({ error: "invalid event id" });
         }
     },
     get_all_bookings: async (
@@ -59,25 +65,27 @@ const BookingController = {
                 .select("_id event booking_date status createdAt updatedAt")
                 .populate("event", "_id title description price date")
                 .exec();
-            res.status(200).json({
-                count: bookings.length,
-                bookings: bookings.map((booking) => {
-                    return {
-                        _id: booking._id,
-                        event: booking.event,
-                        booking_date: booking.booking_date,
-                        status: booking.status,
-                        createdAt: booking.createdAt,
-                        updatedAt: booking.updatedAt,
-                        request: {
-                            type: "GET",
-                            url: "http://localhost:3000/bookings/" + booking._id,
-                        },
-                    };
-                }),
-            });
+            return sendSuccess(res, "Bookings fetched successfully!",bookings)
+            // res.status(200).json({
+            //     count: bookings.length,
+            //     bookings: bookings.map((booking) => {
+            //         return {
+            //             _id: booking._id,
+            //             event: booking.event,
+            //             booking_date: booking.booking_date,
+            //             status: booking.status,
+            //             createdAt: booking.createdAt,
+            //             updatedAt: booking.updatedAt,
+            //             request: {
+            //                 type: "GET",
+            //                 url: "http://localhost:3000/bookings/" + booking._id,
+            //             },
+            //         };
+            //     }),
+            // });
         } catch (err) {
-            res.status(500).json({ error: "Error occurred while fetching bookings" });
+            return sendBadRequest(res, "Error occurred while fetching bookings", err);
+            // res.status(500).json({ error: "Error occurred while fetching bookings" });
         }
     },
 
@@ -92,19 +100,22 @@ const BookingController = {
                 .populate("event", "_id title description price date")
                 .exec();
             if (!booking) {
-                return res.status(404).json({
-                    message: "Booking not found",
-                });
+                return sendNotFound(res, "Booking not found");
+                // return res.status(404).json({
+                //     message: "Booking not found",
+                // });
             }
-            res.status(200).json({
-                booking: booking,
-                request: {
-                    type: "GET",
-                    url: "http://localhost:3000/bookings",
-                },
-            });
+            return sendSuccess(res, "Booking fetched successfully!",booking)
+            // res.status(200).json({
+            //     booking: booking,
+            //     request: {
+            //         type: "GET",
+            //         url: "http://localhost:3000/bookings",
+            //     },
+            // });
         } catch (err) {
-            res.status(500).json({ error: "Invalid Id" });
+            // res.status(500).json({ error: "Invalid Id" });
+            return sendBadRequest(res, "Invalid Id", err);
         }
     },
 
@@ -117,10 +128,12 @@ const BookingController = {
         try {
             booking = await Booking.findById(req.params.bookingId).exec();
         } catch (err) {
-            return res.status(400).json({ error: "Invalid Id" });
+            return sendBadRequest(res, "Invalid Id", err);
+            // return res.status(400).json({ error: "Invalid Id" });
         }
         if (!booking) {
-            return res.status(404).json({ message: "Booking not found" });
+            return sendNotFound(res, "Booking not found");
+            // return res.status(404).json({ message: "Booking not found" });
         }
         const id = req.params.bookingId;
         const updateOps: any = req.body;
@@ -130,15 +143,17 @@ const BookingController = {
                 { $set: updateOps }
             ).exec();
             console.log(result);
-            res.status(200).json({
-                message: "Booking updated",
-                request: {
-                    type: "GET",
-                    url: "http://localhost:3000/bookings/" + id,
-                },
-            });
+            return sendSuccess(res, "Booking updated",result)
+            // res.status(200).json({
+            //     message: "Booking updated",
+            //     request: {
+            //         type: "GET",
+            //         url: "http://localhost:3000/bookings/" + id,
+            //     },
+            // });
         } catch (err) {
-            res.status(500).json({ error: "Invalid Id" });
+            return sendBadRequest(res, "Invalid Id", err);
+            // res.status(500).json({ error: "Invalid Id" });
         }
     },
 
@@ -150,25 +165,28 @@ const BookingController = {
         try {
             const booking = await Booking.findById(req.params.bookingId).exec();
             if (!booking) {
-                return res.status(404).json({
-                    message: "Booking not found",
-                });
+                // return res.status(404).json({
+                //     message: "Booking not found",
+                // });
+                return sendNotFound(res, "Booking not found");
             }
             await Booking.deleteOne({ _id: req.params.bookingId }).exec();
-            res.status(200).json({
-                message: "Booking deleted",
-                request: {
-                    type: "POST",
-                    url: "http://localhost:3000/bookings",
-                    body: {
-                        eventId: "ID",
-                        booking_date: "Date",
-                        status: "String",
-                    },
-                },
-            });
+            return sendSuccess(res, "Booking deleted")
+            // res.status(200).json({
+            //     message: "Booking deleted",
+            //     request: {
+            //         type: "POST",
+            //         url: "http://localhost:3000/bookings",
+            //         body: {
+            //             eventId: "ID",
+            //             booking_date: "Date",
+            //             status: "String",
+            //         },
+            //     },
+            // });
         } catch (err) {
-            res.status(500).json({ error: "Invalid Id" });
+            // res.status(500).json({ error: "Invalid Id" });
+            return sendBadRequest(res, "Invalid Id", err);
         }
     },
 };

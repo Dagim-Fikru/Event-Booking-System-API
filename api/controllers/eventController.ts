@@ -2,6 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import Event from "../models/event";
 import { EventValidation } from "../utils/validation";
+import { sendBadRequest, sendSuccess, sendNotFound } from "../utils/response";
 
 const EventController = {
     get_all_events: async (
@@ -31,11 +32,13 @@ const EventController = {
                     };
                 }),
             };
-            res.status(200).json(response);
+            // res.status(200).json(response);
+            return sendSuccess(res, "Events fetched successfully!", response);
         } catch (err) {
-            res
-                .status(500)
-                .json({ error: "An error occurred while fetching events" });
+            return sendBadRequest(res, "Error occurred while fetching events", err);
+            // res
+            //     .status(500)
+            //     .json({ error: "An error occurred while fetching events" });
         }
     },
     post_an_event: async (
@@ -45,7 +48,8 @@ const EventController = {
     ) => {
         const { error } = EventValidation(req.body);
         if (error) {
-            return res.status(400).json({ error: error.details[0].message });
+            // return res.status(400).json({ error: error.details[0].message });
+            return sendBadRequest(res, "Validation Error", error.details[0].message);
         }
         const event = new Event({
             _id: new mongoose.Types.ObjectId(),
@@ -58,23 +62,25 @@ const EventController = {
         try {
             const result = await event.save();
             console.log(result);
-            res.status(201).json({
-                message: "Event created successfully",
-                createdEvent: {
-                    _id: result._id,
-                    title: result.title,
-                    description: result.description,
-                    date: result.date,
-                    location: result.location,
-                    capacity: result.capacity,
-                    request: {
-                        type: "GET",
-                        url: "http://localhost:3000/events/" + result._id,
-                    },
-                },
-            });
+            return sendSuccess(res, "Event created successfully!", result);
+            // res.status(201).json({
+            //     message: "Event created successfully",
+            //     createdEvent: {
+            //         _id: result._id,
+            //         title: result.title,
+            //         description: result.description,
+            //         date: result.date,
+            //         location: result.location,
+            //         capacity: result.capacity,
+            //         request: {
+            //             type: "GET",
+            //             url: "http://localhost:3000/events/" + result._id,
+            //         },
+            //     },
+            // });
         } catch (err) {
-            res.status(500).json({ error: "Required fields can't be empty" });
+            // res.status(500).json({ error: "Required fields can't be empty" });
+            return sendBadRequest(res, "Required fields can't be empty", err);
         }
     },
     get_individual_event: async (
@@ -87,19 +93,22 @@ const EventController = {
                 .select("-__v")
                 .exec();
             if (event) {
-                res.status(200).json({
-                    event: event,
-                    request: {
-                        type: "GET",
-                        description: "you can get all events with this url:",
-                        url: "http://localhost:3000/events/",
-                    },
-                });
+                return sendSuccess(res, "Event fetched successfully!", event);
+                // res.status(200).json({
+                //     event: event,
+                //     request: {
+                //         type: "GET",
+                //         description: "you can get all events with this url:",
+                //         url: "http://localhost:3000/events/",
+                //     },
+                // });
             } else {
-                res.status(404).json({ message: "Event not found" });
+                // res.status(404).json({ message: "Event not found" });
+                return sendNotFound(res, "Event not found");
             }
         } catch (err) {
-            res.status(500).json({ error: "Invalid Id" });
+            // res.status(500).json({ error: "Invalid Id" });
+            return sendBadRequest(res, "Invalid Id", err);
         }
     },
     update_an_event: async (
@@ -112,7 +121,8 @@ const EventController = {
             .select("-__v")
             .exec();
         if (!event) {
-            return res.status(404).json({ message: "Event not found" });
+            // return res.status(404).json({ message: "Event not found" });
+            return sendNotFound(res, "Event not found");
         }
         const id = req.params.eventId;
         const updateOps: any = req.body;
@@ -121,15 +131,17 @@ const EventController = {
                 { $set: updateOps }
             ).exec();
             console.log(result);
-            res.status(200).json({
-                message: "Event updated",
-                request: {
-                    type: "GET",
-                    url: "http://localhost:3000/events/" + id,
-                },
-            });
+            return sendSuccess(res, "Event updated successfully!", result);
+            // res.status(200).json({
+            //     message: "Event updated",
+            //     request: {
+            //         type: "GET",
+            //         url: "http://localhost:3000/events/" + id,
+            //     },
+            // });
         } catch (err) {
-            res.status(500).json({ error: "Invalid Id" });
+            // res.status(500).json({ error: "Invalid Id" });
+            return sendBadRequest(res, "Invalid Id", err);
         }
     }, 
 
@@ -143,26 +155,30 @@ const EventController = {
                 .select("-__v")
                 .exec();
             if (!event) {
-                return res.status(404).json({ message: "Event not found" });
+                // return res.status(404).json({ message: "Event not found" });
+                return sendNotFound(res, "Event not found");
             }
             const result = await Event.deleteOne({ _id: req.params.eventId }).exec();
-            res.status(200).json({
-                message: "Event deleted",
-                request: {
-                    type: "POST",
-                    message: "Create a new Event",
-                    url: "http://localhost:3000/events/",
-                    body: {
-                        title: "String",
-                        description: "String",
-                        date: "Date",
-                        location: "String",
-                        capacity: "Number",
-                    },
-                },
-            });
+
+            // res.status(200).json({
+            //     message: "Event deleted",
+            //     request: {
+            //         type: "POST",
+            //         message: "Create a new Event",
+            //         url: "http://localhost:3000/events/",
+            //         body: {
+            //             title: "String",
+            //             description: "String",
+            //             date: "Date",
+            //             location: "String",
+            //             capacity: "Number",
+            //         },
+            //     },
+            // });
+            return sendSuccess(res, "Event deleted successfully!", result);
         } catch (err) {
-            res.status(500).json({ error: "Invalid Id" });
+            // res.status(500).json({ error: "Invalid Id" });
+            return sendBadRequest(res, "Invalid Id", err);
         }
     },
 };
